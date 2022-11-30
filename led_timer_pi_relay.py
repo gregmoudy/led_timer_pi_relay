@@ -57,7 +57,7 @@ class LED_Timer:
 	TIME_ON 	= datetime.time(17,0) # 5:00pm
 	TIME_OFF 	= datetime.time(23,0) # 11:00pm
 
-	CHECK_TIME_INTERVAL_SEC = 1
+	CHECK_TIME_INTERVAL_SEC = 60
 
 
 	@classmethod
@@ -68,6 +68,8 @@ class LED_Timer:
 
 	@staticmethod
 	def is_time_between(begin_time, end_time, check_time=None):
+		# https://stackoverflow.com/questions/10048249/how-do-i-determine-if-current-time-is-within-a-specified-range-using-pythons-da
+
 		# If check time is not given, default to current UTC time
 		#check_time = check_time or datetime.datetime.utcnow().time()
 		check_time = check_time or datetime.datetime.now().time()
@@ -82,10 +84,9 @@ class LED_Timer:
 	@classmethod
 	def start_timer(cls):
 		#relays_to_use = cls.RELAYS
-		relays_to_use = [cls.RELAYS[0]]
+		relays_to_use = [cls.RELAYS[3]]
 
 		while True:
-			time.sleep(cls.CHECK_TIME_INTERVAL_SEC)
 			relays_should_be_on = cls.is_time_between(cls.TIME_ON, cls.TIME_OFF)
 
 			print( '{0}: Relays should be on: {1}'.format(time.ctime(),relays_should_be_on))
@@ -95,15 +96,18 @@ class LED_Timer:
 					relay.set_enabled(relays_should_be_on)
 
 				print( '{0}: Relay PIN {1} is on: {2}'.format(time.ctime(),relay.pin_number,relay.enabled))
+			
+			time.sleep(cls.CHECK_TIME_INTERVAL_SEC)
 
 
 	@classmethod
 	def test_relays(cls):
 		'''Test relay wiring by toggling on and off every second.'''
 		while True:
-			time.sleep(1)
 			for relay in cls.RELAYS:
 				relay.set_enabled(not(relay.enabled))
+			
+			time.sleep(1)
 
 
 
