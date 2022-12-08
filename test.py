@@ -54,7 +54,7 @@ class LED_Timer:
 	RELAYS = [ PiRelay(x) for x in RELAYS_GPIO_PINS ]
 
 	# Time of day to turn the LED relays on and off, tuple of the hour and minute of the time of day in military time.
-	TIME_ON 	= datetime.time(16,0) # 4:00pm
+	TIME_ON 	= datetime.time(17,0) # 5:00pm
 	TIME_OFF 	= datetime.time(23,0) # 11:00pm
 
 	CHECK_TIME_INTERVAL_SEC = 60
@@ -89,14 +89,13 @@ class LED_Timer:
 		while True:
 			relays_should_be_on = cls.is_time_between(cls.TIME_ON, cls.TIME_OFF)
 
-			print('{0}: Schedule: {1} - {2}'.format(time.ctime(), cls.TIME_ON, cls.TIME_OFF))
-			print('{0}: Relays should be on: {1}'.format(time.ctime(), relays_should_be_on))
+			print( '{0}: Relays should be on: {1}'.format(time.ctime(),relays_should_be_on))
 
 			for relay in relays_to_use:
 				if relay.enabled != relays_should_be_on:
 					relay.set_enabled(relays_should_be_on)
 
-				print('{0}: Relay PIN {1} is on: {2}'.format(time.ctime(),relay.pin_number,relay.enabled))
+				print( '{0}: Relay PIN {1} is on: {2}'.format(time.ctime(),relay.pin_number,relay.enabled))
 			
 			time.sleep(cls.CHECK_TIME_INTERVAL_SEC)
 
@@ -123,5 +122,5 @@ if __name__ == '__main__':
 	# Create a handler for an early out so via ctrl-c so the relays get turned off.
 	signal.signal(signal.SIGINT, interrupt_handler)
 
-	LED_Timer.start_timer()
-	#LED_Timer.test_relays()
+	#LED_Timer.start_timer()
+	LED_Timer.test_relays()
