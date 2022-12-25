@@ -1,5 +1,6 @@
 import datetime
 import signal
+import sys
 import time
 
 import RPi.GPIO
@@ -67,7 +68,7 @@ class LED_Timer:
 
 
 	@staticmethod
-	def is_time_between(begin_time, end_time, check_time=None):
+	def is_time_between(begin_time, end_time, check_time = None):
 		# https://stackoverflow.com/questions/10048249/how-do-i-determine-if-current-time-is-within-a-specified-range-using-pythons-da
 
 		# If check time is not given, default to current UTC time
@@ -82,14 +83,21 @@ class LED_Timer:
 
 
 	@classmethod
-	def start_timer(cls):
+	def start_timer(cls, forced_state = None):
 		#relays_to_use = cls.RELAYS
 		relays_to_use = [cls.RELAYS[3]]
 
 		while True:
-			relays_should_be_on = cls.is_time_between(cls.TIME_ON, cls.TIME_OFF)
+			if forced_state is not None:
+				relays_should_be_on = forced_state
+				status = '{0}: Forced State Mode: {1}'.format(time.ctime(), forced_state)
 
-			print('{0}: Schedule: {1} - {2}'.format(time.ctime(), cls.TIME_ON, cls.TIME_OFF))
+			else:
+				relays_should_be_on = cls.is_time_between(cls.TIME_ON, cls.TIME_OFF)
+				status = '{0}: Schedule Mode: {1} - {2}'.format(time.ctime(), cls.TIME_ON, cls.TIME_OFF)
+
+			print('====================LED TIMER PI RELAY====================')
+			print(status)
 			print('{0}: Relays should be on: {1}'.format(time.ctime(), relays_should_be_on))
 
 			for relay in relays_to_use:
@@ -120,8 +128,22 @@ def interrupt_handler(_signum, _frame):
 
 
 if __name__ == '__main__':
+	# Command Line Arguments
+	arg1 = None
+	if len(sys.argv) > 1:
+		arg1 = sys.argv[1].lower()
+
+	# Force the timer to be on or off regardless of schedule.
+	forced_state = None
+	if arg1 in [ 'true', 'on' ]:
+		forced_state = True
+	
+	elif arg1 in [ 'false', 'off' ]:
+		forced_state = False
+
 	# Create a handler for an early out so via ctrl-c so the relays get turned off.
 	signal.signal(signal.SIGINT, interrupt_handler)
 
-	LED_Timer.start_timer()
+	# Start Timer
+	LED_Timer.start_timer(forced_state = forced_state)
 	#LED_Timer.test_relays()
